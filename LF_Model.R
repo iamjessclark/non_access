@@ -36,9 +36,9 @@ Parameters <- R6Class(
     #mImpRate = .0006, #mean importation rate
     #maxImpRate = .001, #max importation rate
     commRate = 0.5, #commuting rate per timestep (month)
-    mink = .01, #min k (overdispersion gamma bite risk)
-    maxk = .1, #max k (overdispersion gamma bite risk)
-
+    #mink = .01, #min k (overdispersion gamma bite risk)
+    #maxk = .1, #max k (overdispersion gamma bite risk)
+    k = 0.03,
     ## Vector ##
     species = 1, #0 culex, 1 anopheles
     initialL3 = 5, #initial larval density
@@ -47,8 +47,8 @@ Parameters <- R6Class(
     kappas1 = 4.395, #L3 uptake and development
     r1 = 0.055, #L3 uptake and development
     deathMosq = 5, #death rate of mosquitos
-    minvth = 0, #min V/H ratio = 0
-    maxvth = 10, #max V/H ratio = 70
+    minvth = 1, #min V/H ratio = 0
+    maxvth = 5, #max V/H ratio = 70
 
     ## Worm ##
     nu = 0, #poly-monogamy parameter
@@ -140,7 +140,7 @@ Population <- R6Class(
         VtH <<- runif(max(self$nationIndex),p$minvth,p$maxvth)
         } # sample one VtH for each nation from a uniform
       if(!nationalVtH) { VtH <<- rep(runif(1,p$minvth,p$maxvth),length(nationIndex)) }
-      k <<- runif(1,min = p$mink, max = p$maxk) # sample one k for the population from a uniform
+      k <<- p$k #runif(1,min = p$mink, max = p$maxk) # sample one k for the population from a uniform
       biteRisk <<- rgamma(nHost,shape = k, rate = k) #individual bite risk shape is k, mean=1 so rate=shape
       biteRate <<- pmin(age/(9*12),1) #age in months - linear increase max out at 9 years - age scale factor for bite risk
     },
@@ -203,18 +203,60 @@ Population <- R6Class(
       sysExProb <<- rbinom(nHost, 1, p$sysEx)
     },
     
-    AssignHighVectorVars = function(){
-      p$lbda <<- 611
-      p$minvth <<- 60
-      p$maxvth <<- 150
+    #AssignHighVectorVars = function(){
+      #p$lbda <<- 611
+      #p$minvth <<- 60
+      #p$maxvth <<- 150
+    #},
+    
+    #AssignMidVectorVars = function(){
+      #p$lbda <<- 611
+      #p$minvth <<- 60
+      #p$maxvth <<- 150
+    #},
+    
+    #AssignLowVectorVars = function(){
+      #p$lbda <<- 3
+      #p$minvth <<- 20
+      #p$maxvth <<- 40
+    #},
+    # all of these are from Irvine 2015 pars & vects
+    AssignGroup2 = function(){
+      p$k <<- 0.16
+      p$minvth <<- 10
+      p$maxvth <<- 15
+      k <<- p$k
+      biteRisk <<- rgamma(nHost,shape = k, rate = k)
+      VtH <<- rep(runif(1,p$minvth,p$maxvth),length(nationIndex))
     },
     
-    AssignLowVectorVars = function(){
-      p$lbda <<- 3
-      p$minvth <<- 20
-      p$maxvth <<- 40
+    AssignGroup3 = function(){
+      p$k <<- 0.27
+      p$minvth <<- 15
+      p$maxvth <<- 25
+      k <<- p$k
+      biteRisk <<- rgamma(nHost,shape = k, rate = k)
+      VtH <<- rep(runif(1,p$minvth,p$maxvth),length(nationIndex))
+    },
+    
+    AssignGroup4 = function(){
+      p$k <<- 0.37
+      p$minvth <<- 25
+      p$maxvth <<- 30
+      k <<- p$k
+      biteRisk <<- rgamma(nHost,shape = k, rate = k)
+      VtH <<- rep(runif(1,p$minvth,p$maxvth),length(nationIndex))
     },
 
+    AssignGroup5 = function(){
+      p$k <<- 0.48
+      p$minvth <<- 30
+      p$maxvth <<- 40
+      k <<- p$k
+      biteRisk <<- rgamma(nHost,shape = k, rate = k)
+      VtH <<- rep(runif(1,p$minvth,p$maxvth),length(nationIndex))
+    },
+    
     runMDA = function(pop=1,towns=NA,coverage,drug, compliance){
       if(coverage != treatCov | compliance!= p$sysComp ){ #check syst non-compliance probabilities been set for this coverage level already, if not then set them
         #| exclusion!= p$sysEx
